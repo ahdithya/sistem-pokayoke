@@ -1,23 +1,18 @@
+const prisma = require("../configs/prisma");
 const asyncHandler = require("express-async-handler");
 const { validationResult } = require("express-validator");
-const prisma = require("../configs/prisma");
-// const { v4: uuidv4 } = require("uuid");
 
-const getAllPart = asyncHandler(async (req, res) => {
+const getAllPos = asyncHandler(async (req, res) => {
   try {
-    const allPart = await prisma.parts.findMany().select({
-      id: true,
-      partNo: true,
-      partName: true,
-    });
-    res.status(200).json({ data: allPart });
+    const allPos = await prisma.pos.findMany();
+    res.status(200).json({ data: allPos });
   } catch (err) {
     if (!res.status) res.status(500);
     throw new Error(err);
   }
 });
 
-const getOnePart = asyncHandler(async (req, res) => {
+const getOnePos = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const isError = validationResult(req);
@@ -31,24 +26,24 @@ const getOnePart = asyncHandler(async (req, res) => {
   }
 
   try {
-    const findOnePart = await prisma.parts.findUnique({
+    const findOnePos = await prisma.pos.findUnique({
       where: {
         id,
       },
     });
-    if (!findOnePart) {
+    if (!findOnePos) {
       res.status(404);
       throw new Error("Data tidak ditemukan");
     }
-    res.status(200).json({ data: findOnePart });
+    res.status(200).json({ data: findOnePos });
   } catch (err) {
     if (!res.status) res.status(500);
     throw new Error(err);
   }
 });
 
-const createOnePart = asyncHandler(async (req, res) => {
-  const { partNo, partName } = req.body;
+const createOnePos = asyncHandler(async (req, res) => {
+  const { pos, description } = req.body;
 
   const isError = validationResult(req);
   if (!isError.isEmpty()) {
@@ -61,22 +56,22 @@ const createOnePart = asyncHandler(async (req, res) => {
   }
 
   try {
-    const createNewPart = await prisma.parts.create({
+    const createNewPos = await prisma.pos.create({
       data: {
-        partNo,
-        partName,
+        pos,
+        description,
       },
     });
-    res.status(201).json({ data: createNewPart });
+    res.status(201).json({ data: createNewPos });
   } catch (err) {
     if (!res.status) res.status(500);
     throw new Error(err);
   }
 });
 
-const updateOnePart = asyncHandler(async (req, res) => {
+const updateOnePos = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { partName, partNo } = req.body;
+  const { pos, description } = req.body;
 
   const isError = validationResult(req);
   if (!isError.isEmpty()) {
@@ -89,49 +84,32 @@ const updateOnePart = asyncHandler(async (req, res) => {
   }
 
   try {
-    const updatePart = await prisma.parts.update({
+    const updateOnePos = await prisma.pos.update({
       where: {
         id,
       },
       data: {
-        partNo,
-        partName,
+        pos,
+        description,
       },
     });
-
-    if (!updatePart) {
-      res.status(404);
-      throw new Error("Data tidak ditemukan");
-    }
-
-    res.status(200).json({ data: updatePart });
+    res.status(200).json({ data: updateOnePos });
   } catch (err) {
     if (!res.status) res.status(500);
     throw new Error(err);
   }
 });
 
-const deleteOnePart = asyncHandler(async (req, res) => {
+const deleteOnePos = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const isError = validationResult(req);
-  if (!isError.isEmpty()) {
-    res.status(400);
-    throw {
-      name: "Validation Error",
-      message: isError.errors[0].msg,
-      stack: isError.errors,
-    };
-  }
-
   try {
-    const deletePart = await prisma.parts.delete({
+    const deleteOnePos = await prisma.pos.delete({
       where: {
         id,
       },
     });
-
-    if (!deletePart) {
+    if (!deleteOnePos) {
       res.status(404);
       throw new Error("Data tidak ditemukan");
     }
@@ -143,9 +121,9 @@ const deleteOnePart = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  getAllPart,
-  getOnePart,
-  createOnePart,
-  updateOnePart,
-  deleteOnePart,
+  getAllPos,
+  getOnePos,
+  createOnePos,
+  updateOnePos,
+  deleteOnePos,
 };
