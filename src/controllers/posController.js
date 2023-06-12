@@ -82,6 +82,15 @@ const updateOnePos = asyncHandler(async (req, res) => {
       stack: isError.errors,
     };
   }
+  const findOnePos = await prisma.pos.findUnique({
+    where: {
+      id,
+    },
+  });
+  if (!findOnePos) {
+    res.status(404);
+    throw new Error("Data tidak ditemukan");
+  }
 
   try {
     const updateOnePos = await prisma.pos.update({
@@ -93,6 +102,7 @@ const updateOnePos = asyncHandler(async (req, res) => {
         description,
       },
     });
+
     res.status(200).json({ data: updateOnePos });
   } catch (err) {
     if (!res.status) res.status(500);
@@ -102,6 +112,16 @@ const updateOnePos = asyncHandler(async (req, res) => {
 
 const deleteOnePos = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
+  const findOnePos = await prisma.pos.findUnique({
+    where: {
+      id,
+    },
+  });
+  if (!findOnePos) {
+    res.status(404);
+    throw new Error("Data tidak ditemukan");
+  }
 
   try {
     const deleteOnePos = await prisma.pos.delete({

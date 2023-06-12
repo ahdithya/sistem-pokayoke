@@ -5,10 +5,12 @@ const prisma = require("../configs/prisma");
 
 const getAllPart = asyncHandler(async (req, res) => {
   try {
-    const allPart = await prisma.parts.findMany().select({
-      id: true,
-      partNo: true,
-      partName: true,
+    const allPart = await prisma.part.findMany({
+      select: {
+        id: true,
+        part_no: true,
+        part_name: true,
+      },
     });
     res.status(200).json({ data: allPart });
   } catch (err) {
@@ -31,7 +33,7 @@ const getOnePart = asyncHandler(async (req, res) => {
   }
 
   try {
-    const findOnePart = await prisma.parts.findUnique({
+    const findOnePart = await prisma.part.findUnique({
       where: {
         id,
       },
@@ -48,7 +50,7 @@ const getOnePart = asyncHandler(async (req, res) => {
 });
 
 const createOnePart = asyncHandler(async (req, res) => {
-  const { partNo, partName } = req.body;
+  const { part_no, part_name } = req.body;
 
   const isError = validationResult(req);
   if (!isError.isEmpty()) {
@@ -61,10 +63,10 @@ const createOnePart = asyncHandler(async (req, res) => {
   }
 
   try {
-    const createNewPart = await prisma.parts.create({
+    const createNewPart = await prisma.part.create({
       data: {
-        partNo,
-        partName,
+        part_no,
+        part_name,
       },
     });
     res.status(201).json({ data: createNewPart });
@@ -76,7 +78,7 @@ const createOnePart = asyncHandler(async (req, res) => {
 
 const updateOnePart = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { partName, partNo } = req.body;
+  const { part_name, part_no } = req.body;
 
   const isError = validationResult(req);
   if (!isError.isEmpty()) {
@@ -89,20 +91,25 @@ const updateOnePart = asyncHandler(async (req, res) => {
   }
 
   try {
-    const updatePart = await prisma.parts.update({
+    const findOnePart = await prisma.part.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!findOnePart) {
+      res.status(404);
+      throw new Error("Data tidak ditemukan");
+    }
+
+    const updatePart = await prisma.part.update({
       where: {
         id,
       },
       data: {
-        partNo,
-        partName,
+        part_no,
+        part_name,
       },
     });
-
-    if (!updatePart) {
-      res.status(404);
-      throw new Error("Data tidak ditemukan");
-    }
 
     res.status(200).json({ data: updatePart });
   } catch (err) {
@@ -125,16 +132,21 @@ const deleteOnePart = asyncHandler(async (req, res) => {
   }
 
   try {
-    const deletePart = await prisma.parts.delete({
+    const findOnePart = await prisma.part.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!findOnePart) {
+      res.status(404);
+      throw new Error("Data tidak ditemukan");
+    }
+    const deletePart = await prisma.part.delete({
       where: {
         id,
       },
     });
 
-    if (!deletePart) {
-      res.status(404);
-      throw new Error("Data tidak ditemukan");
-    }
     res.status(200).json({ message: "Data berhasil dihapus!" });
   } catch (err) {
     if (!res.status) res.status(500);

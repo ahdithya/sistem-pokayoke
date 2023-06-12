@@ -10,14 +10,14 @@ const getOnePartValidator = [
 ];
 
 const createOnePartValidator = [
-  body("partNo")
+  body("part_no")
     .exists()
     .withMessage("Part Nomor is Required!")
     .isString()
     .withMessage("Part Nomor must be a string!")
     .isLength({ max: 3 })
     .withMessage("Part Nomor must be maximal 3 character!"),
-  body("partName")
+  body("part_name")
     .exists()
     .withMessage("Part Name is Required!")
     .isLength({ max: 5 })
@@ -30,16 +30,16 @@ const updateOnePartValidator = [
     .withMessage("Id is required")
     .isUUID()
     .withMessage("Invalid Id"),
-  body("partNo")
+  body("part_no")
     .exists()
     .withMessage("Part Nomor is Required!")
     .isString()
     .withMessage("Part Nomor must be a string!")
     .isLength({ max: 3 })
     .withMessage("Part Nomor must be must be maximal 3 character!"),
-  body("partName")
+  body("part_name")
     .exists()
-    .withMessage("partName is Required!")
+    .withMessage("Part Name is Required!")
     .isLength({ max: 5 })
     .withMessage("Part Name must be must be maximal 5 character!"),
 ];

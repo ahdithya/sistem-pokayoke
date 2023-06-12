@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const partController = require("../../controllers/partController");
+const { authJWT } = require("../../middlewares/auth");
 const {
   getOnePartValidator,
   createOnePartValidator,
@@ -10,7 +11,7 @@ const {
 
 router
   .route("/")
-  .get(partController.getAllPart)
+  .get(authJWT, partController.getAllPart)
   .post(createOnePartValidator, partController.createOnePart);
 
 router
