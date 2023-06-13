@@ -41,6 +41,7 @@ const authJWT = asyncHandler(async (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ").pop();
       const decoded = jwt.verify(token, process.env.JWT_KEY);
+      console.log(decoded);
       const isUser = prisma.user.findUnique({
         where: {
           id: decoded.id,
