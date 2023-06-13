@@ -16,29 +16,56 @@ enum role {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.Char(36)
+  id        Int         @id @default(autoincrement())
   name      String
   username  String
   email     String
   password  String
-  role      role     @default(user)
+  role      role        @default(user)
   position  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  workOrder workOrder[]
 }
 
 model Part {
-  id        String   @id @default(uuid()) @db.Char(36)
+  id        Int         @id @default(autoincrement())
   part_no   String
   part_name String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  workOrder workOrder[]
+}
+
+model Pos {
+  id          Int         @id @default(autoincrement())
+  pos         String
+  description String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  workOrder   workOrder[]
+}
+
+model fileUpload {
+  id        Int      @id @default(autoincrement())
+  filename  String
+  mimetype  String
+  encoding  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Pos {
-  id          String   @id @default(uuid()) @db.Char(36)
-  pos         String
-  description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model workOrder {
+  id        Int      @id @default(autoincrement())
+  unique    String
+  id_pos    Int
+  id_part   Int
+  id_user   Int
+  tanggal   DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pos  Pos  @relation(fields: [id_pos], references: [id])
+  part Part @relation(fields: [id_part], references: [id])
+  user User @relation(fields: [id_user], references: [id])
 }
