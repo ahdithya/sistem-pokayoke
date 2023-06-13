@@ -5,7 +5,7 @@ const {
   getOnePosValidator,
   createOnePosValidator,
 } = require("./validator/posValidator");
-
+const { authJWT, adminOnly } = require("../../middlewares/auth");
 router
   .route("/")
   .get(posController.getAllPos)
