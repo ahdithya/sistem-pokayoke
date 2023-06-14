@@ -193,9 +193,45 @@ const uploadOrder = asyncHandler(async (req, res) => {
   }
 });
 
+const deleteOneWorkOrder = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const isError = validationResult(req);
+  if (!isError.isEmpty()) {
+    res.status(400);
+    throw {
+      name: "Validation Error",
+      message: isError.errors[0].msg,
+      stack: isError.errors,
+    };
+  }
+
+  try {
+    const findOneWorkOrder = await prisma.workOrder.findFirst({
+      where: {
+        id: parseInt(id),
+      },
+    });
+    if (!findOneWorkOrder) {
+      res.status(404);
+      throw new Error("Data tidak ditemukan");
+    }
+
+    const deleteWorkOrder = await prisma.workOrder.delete({
+      where: {
+        id: parseInt(id),
+      },
+    });
+
+    res.status(200).json({ message: "Data berhasil dihapus!" });
+  } catch (err) {
+    if (!res.status) res.status(500);
+    throw new Error(err);
+  }
+});
 module.exports = {
   uploadOrder,
   createWorkOrder,
   getAllWorkOrder,
   getOneWorkOrder,
+  deleteOneWorkOrder,
 };

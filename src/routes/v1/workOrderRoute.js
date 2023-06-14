@@ -12,6 +12,9 @@ router
   .route("/upload-file")
   .post(uploadFile.single("file"), workOrderController.uploadOrder);
 
-router.route("/:id").get(workOrderController.getOneWorkOrder).put().delete();
+router
+  .route("/:id")
+  .get(workOrderController.getOneWorkOrder)
+  .delete(workOrderController.deleteOneWorkOrder);
 
 module.exports = router;
