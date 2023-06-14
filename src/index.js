@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 app.use(`${mainRoute}part`, authJWT, adminOnly, partRoute);
-app.use(`${mainRoute}pos`, authJWT, posRoute);
+app.use(`${mainRoute}pos`, authJWT, adminOnly, posRoute);
 app.use(`${mainRoute}user`, userRoute);
 app.use(`${mainRoute}work-order`, authJWT, workOrderRoute);
 
