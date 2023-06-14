@@ -28,7 +28,7 @@ const getOnePos = asyncHandler(async (req, res) => {
   try {
     const findOnePos = await prisma.pos.findUnique({
       where: {
-        id,
+        id: parseInt(id),
       },
     });
     if (!findOnePos) {
@@ -45,15 +45,15 @@ const getOnePos = asyncHandler(async (req, res) => {
 const createOnePos = asyncHandler(async (req, res) => {
   const { pos, description } = req.body;
 
-  const isError = validationResult(req);
-  if (!isError.isEmpty()) {
-    res.status(400);
-    throw {
-      name: "Validation Error",
-      message: isError.errors[0].msg,
-      stack: isError.errors,
-    };
-  }
+  // const isError = validationResult(req);
+  // if (!isError.isEmpty()) {
+  //   res.status(400);
+  //   throw {
+  //     name: "Validation Error",
+  //     message: isError.errors[0].msg,
+  //     stack: isError.errors,
+  //   };
+  // }
 
   try {
     const createNewPos = await prisma.pos.create({
@@ -84,7 +84,7 @@ const updateOnePos = asyncHandler(async (req, res) => {
   }
   const findOnePos = await prisma.pos.findUnique({
     where: {
-      id,
+      id: parseInt(id),
     },
   });
   if (!findOnePos) {
@@ -95,7 +95,7 @@ const updateOnePos = asyncHandler(async (req, res) => {
   try {
     const updateOnePos = await prisma.pos.update({
       where: {
-        id,
+        id: parseInt(id),
       },
       data: {
         pos,
@@ -115,7 +115,7 @@ const deleteOnePos = asyncHandler(async (req, res) => {
 
   const findOnePos = await prisma.pos.findUnique({
     where: {
-      id,
+      id: parseInt(id),
     },
   });
   if (!findOnePos) {
@@ -126,7 +126,7 @@ const deleteOnePos = asyncHandler(async (req, res) => {
   try {
     const deleteOnePos = await prisma.pos.delete({
       where: {
-        id,
+        id: parseInt(id),
       },
     });
     if (!deleteOnePos) {
