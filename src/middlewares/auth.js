@@ -3,34 +3,34 @@ const asyncHandler = require("express-async-handler");
 const prisma = require("../configs/prisma");
 require("dotenv").config();
 
-const auth = asyncHandler((req, res, next) => {
-  let token;
-  token = req.headers.authorization.split(" ").pop();
-  if (!token) {
-    res.status(401);
-    throw new Error("Not Authorized, no token");
-  }
+// const auth = asyncHandler((req, res, next) => {
+//   let token;
+//   token = req.headers.authorization.split(" ").pop();
+//   if (!token) {
+//     res.status(401);
+//     throw new Error("Not Authorized, no token");
+//   }
 
-  try {
-    const data = jwt.verify(token, process.env.JWT_KEY);
-    const isUser = prisma.user.findUnique({
-      where: {
-        id: data.id,
-      },
-    });
-    if (!isUser) {
-      res.status(401);
-      throw new Error("Not Authorized, no user");
-    }
+//   try {
+//     const data = jwt.verify(token, process.env.JWT_KEY);
+//     const isUser = prisma.user.findUnique({
+//       where: {
+//         id: data.id,
+//       },
+//     });
+//     if (!isUser) {
+//       res.status(401);
+//       throw new Error("Not Authorized, no user");
+//     }
 
-    req.user = isUser;
-  } catch (err) {
-    res.status(401);
-    throw new Error(err);
-  }
+//     req.user = isUser;
+//   } catch (err) {
+//     res.status(401);
+//     throw new Error(err);
+//   }
 
-  next();
-});
+//   next();
+// });
 
 const authJWT = asyncHandler(async (req, res, next) => {
   let token;
@@ -42,7 +42,7 @@ const authJWT = asyncHandler(async (req, res, next) => {
       token = req.headers.authorization.split(" ").pop();
       const decoded = jwt.verify(token, process.env.JWT_KEY);
       console.log(decoded);
-      const isUser = prisma.user.findUnique({
+      const isUser = await prisma.user.findUnique({
         where: {
           id: decoded.id,
         },
@@ -52,7 +52,8 @@ const authJWT = asyncHandler(async (req, res, next) => {
         throw new Error("Not Authorized");
       }
 
-      req.user = isUser;
+      res.locals.user = isUser;
+      console.log(res.locals.user);
     } catch (err) {
       res.status(401);
       throw new Error(err);
@@ -66,7 +67,7 @@ const authJWT = asyncHandler(async (req, res, next) => {
 });
 
 const adminOnly = (req, res, next) => {
-  const isAdmin = req.user;
+  const isAdmin = res.locals.user;
   if (isAdmin.role !== "admin") {
     res.status(401);
     throw new Error("Not Authorized, Not Admin");
@@ -75,7 +76,9 @@ const adminOnly = (req, res, next) => {
 };
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET);
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "30d",
+  });
 };
 
 module.exports = { authJWT, generateToken, adminOnly };
