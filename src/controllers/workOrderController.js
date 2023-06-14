@@ -3,11 +3,93 @@ const asyncHandler = require("express-async-handler");
 const { validationResult } = require("express-validator");
 const fs = require("fs");
 const csv = require("csv-parser");
-const { connect } = require("http2");
+
+const getAllWorkOrder = asyncHandler(async (req, res) => {
+  try {
+    const getAllWorkOrder = await prisma.workOrder.findMany({
+      select: {
+        id: true,
+        unique: true,
+        pos: {
+          select: {
+            pos: true,
+          },
+        },
+        part: {
+          select: {
+            part_no: true,
+            part_name: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+    res.status(200).json({ data: getAllWorkOrder });
+  } catch (err) {
+    if (!res.status) res.status(500);
+    throw new Error(err);
+  }
+});
+
+const getOneWorkOrder = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const isError = validationResult(req);
+  if (!isError.isEmpty()) {
+    res.status(400);
+    throw {
+      name: "Validation Error",
+      message: isError.errors[0].msg,
+      stack: isError.errors,
+    };
+  }
+
+  try {
+    const findOneWorkOrder = await prisma.workOrder.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+      select: {
+        id: true,
+        unique: true,
+        pos: {
+          select: {
+            pos: true,
+          },
+        },
+        part: {
+          select: {
+            part_no: true,
+            part_name: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!findOneWorkOrder) {
+      res.status(404);
+      throw new Error("Data tidak ditemukan");
+    }
+
+    res.status(200).json({ data: findOneWorkOrder });
+  } catch (err) {
+    if (!res.status) res.status(500);
+    throw new Error(err);
+  }
+});
 
 const createWorkOrder = asyncHandler(async (req, res) => {
   const { unique, id_pos, id_part } = req.body;
-  const user = req.user;
+  const user = res.locals.user;
 
   const isError = validationResult(req);
   if (!isError.isEmpty()) {
@@ -31,6 +113,26 @@ const createWorkOrder = asyncHandler(async (req, res) => {
         },
         user: {
           connect: { id: user.id },
+        },
+      },
+      select: {
+        id: true,
+        unique: true,
+        pos: {
+          select: {
+            pos: true,
+          },
+        },
+        part: {
+          select: {
+            part_no: true,
+            part_name: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+          },
         },
       },
     });
@@ -91,4 +193,9 @@ const uploadOrder = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { uploadOrder, createWorkOrder };
+module.exports = {
+  uploadOrder,
+  createWorkOrder,
+  getAllWorkOrder,
+  getOneWorkOrder,
+};
