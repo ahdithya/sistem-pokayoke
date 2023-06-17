@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const partController = require("../../controllers/partController");
-const { authJWT } = require("../../middlewares/auth");
+const { adminOnly } = require("../../middlewares/auth");
 const {
   getOnePartValidator,
   createOnePartValidator,
@@ -11,13 +11,13 @@ const {
 
 router
   .route("/")
-  .get(authJWT, partController.getAllPart)
-  .post(createOnePartValidator, partController.createOnePart);
+  .get(partController.getAllPart)
+  .post(adminOnly, createOnePartValidator, partController.createOnePart);
 
 router
   .route("/:id")
   .get(getOnePartValidator, partController.getOnePart)
-  .put(updateOnePartValidator, partController.updateOnePart)
-  .delete(deleteOnePartValidator, partController.deleteOnePart);
+  .put(adminOnly, updateOnePartValidator, partController.updateOnePart)
+  .delete(adminOnly, deleteOnePartValidator, partController.deleteOnePart);
 
 module.exports = router;
