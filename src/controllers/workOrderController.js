@@ -1,8 +1,7 @@
 const prisma = require("../configs/prisma");
 const asyncHandler = require("express-async-handler");
 const { validationResult } = require("express-validator");
-const fs = require("fs");
-const csv = require("csv-parser");
+const { parseCSV, deleteFile } = require("../middlewares/multer");
 
 const getAllWorkOrder = asyncHandler(async (req, res) => {
   try {
@@ -144,8 +143,8 @@ const createWorkOrder = asyncHandler(async (req, res) => {
 });
 
 const uploadOrder = asyncHandler(async (req, res) => {
-  const file = req.files;
-
+  const file = req.file;
+  const user = res.locals.user;
   const isError = validationResult(req);
   if (!isError.isEmpty()) {
     res.status(400);
@@ -157,36 +156,28 @@ const uploadOrder = asyncHandler(async (req, res) => {
   }
 
   if (file.mimetype === "text/csv") {
-    const parsing = [];
-    fs.createReadStream(file.path)
-      .pipe(csv())
-      .on("data", (row) => parsing.push(row))
-      .on("end", () =>
-        asyncHandler(async (req, res) => {
-          console.log(parsing);
+    const parsing = await parseCSV(file);
+    try {
+      const createdOrder = await prisma.fileUpload.create({
+        data: {
+          id_user: user.id,
+          file_name: file.originalname,
+          file_mime: file.mimetype,
+          file_original: file.originalname,
+          file_path: file.path,
+          file_extension: file.originalname.split(".").pop(),
+          type: "csv",
+          data: parsing,
+        },
+      });
 
-          try {
-            const createdData = await prisma.file_upload.create({
-              data: {
-                file_name: file.originalname,
-                file_mime: file.mimetype,
-                file_original: file.originalname,
-                file_path: file.path,
-                file_extension: file.originalname.split(".").pop(),
-                type: "csv", // Tipe file yang sesuai dengan kebutuhan Anda
-                data: JSON.stringify(parsing), // Mengubah array hasil parsing menjadi string JSON
-              },
-            });
-            console.log("Data created:", createdData);
-            res.status(200).json({
-              message: "File uploaded and data created successfully.",
-            });
-          } catch (error) {
-            console.error("Error creating data:", error);
-            res.status(500).json({ message: "Error creating data from file." });
-          }
-        })
-      );
+      res.status(200).json({
+        message: createdOrder,
+      });
+    } catch (err) {
+      if (!res.status) res.status(500);
+      throw new Error(err);
+    }
   } else {
     res.status(400);
     throw new Error("Invalid file format. Only CSV files are supported.");
