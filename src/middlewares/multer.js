@@ -1,5 +1,6 @@
 const multer = require("multer");
-// const fs = require("fs");
+const fs = require("fs");
+const csv = require("csv-parser");
 
 const uploadFile = multer({
   storage: multer.diskStorage({
@@ -10,12 +11,8 @@ const uploadFile = multer({
       cb(null, Date.now() + "_" + file.originalname);
     },
   }),
-  fileFilter: (req, res, cb) => {
-    if (
-      file.mimetype === "text/csv" ||
-      file.mimetype ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    ) {
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "text/csv") {
       cb(null, true);
     } else {
       cb(new Error("File type not supported."), false);
@@ -23,6 +20,23 @@ const uploadFile = multer({
   },
   limits: { fileSize: 5 * 1024 * 1024 },
 });
+
+const parseCSV = async (file) => {
+  try {
+    const parsing = await new Promise((resolve, reject) => {
+      const results = [];
+      fs.createReadStream(file.path)
+        .pipe(csv())
+        .on("data", (data) => results.push(data))
+        .on("end", () => resolve(results))
+        .on("error", (error) => reject(error));
+    });
+    console.log(parsing);
+    return parsing;
+  } catch (err) {
+    throw new Error("Error parsing CSV file");
+  }
+};
 
 const deleteFile = (filePath) => {
   fs.unlink(filePath, (err) => {
@@ -34,4 +48,4 @@ const deleteFile = (filePath) => {
   });
 };
 
-module.exports = { uploadFile };
+module.exports = { uploadFile, parseCSV, deleteFile };
