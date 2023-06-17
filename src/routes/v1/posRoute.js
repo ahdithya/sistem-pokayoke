@@ -9,12 +9,12 @@ const { authJWT, adminOnly } = require("../../middlewares/auth");
 router
   .route("/")
   .get(posController.getAllPos)
-  .post(createOnePosValidator, posController.createOnePos);
+  .post(adminOnly, createOnePosValidator, posController.createOnePos);
 
 router
   .route("/:id")
   .get(getOnePosValidator, posController.getOnePos)
-  .put(posController.updateOnePos)
-  .delete(posController.deleteOnePos);
+  .put(adminOnly, posController.updateOnePos)
+  .delete(adminOnly, posController.deleteOnePos);
 
 module.exports = router;
