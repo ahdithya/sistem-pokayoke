@@ -3,35 +3,6 @@ const asyncHandler = require("express-async-handler");
 const prisma = require("../configs/prisma");
 require("dotenv").config();
 
-// const auth = asyncHandler((req, res, next) => {
-//   let token;
-//   token = req.headers.authorization.split(" ").pop();
-//   if (!token) {
-//     res.status(401);
-//     throw new Error("Not Authorized, no token");
-//   }
-
-//   try {
-//     const data = jwt.verify(token, process.env.JWT_KEY);
-//     const isUser = prisma.user.findUnique({
-//       where: {
-//         id: data.id,
-//       },
-//     });
-//     if (!isUser) {
-//       res.status(401);
-//       throw new Error("Not Authorized, no user");
-//     }
-
-//     req.user = isUser;
-//   } catch (err) {
-//     res.status(401);
-//     throw new Error(err);
-//   }
-
-//   next();
-// });
-
 const authJWT = asyncHandler(async (req, res, next) => {
   let token;
   if (
@@ -44,7 +15,7 @@ const authJWT = asyncHandler(async (req, res, next) => {
       console.log(decoded);
       const isUser = await prisma.user.findUnique({
         where: {
-          id: decoded.id,
+          id: String(decoded.id),
         },
       });
       if (!isUser) {
