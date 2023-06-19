@@ -6,26 +6,26 @@ const { parseCSV, deleteFile } = require("../middlewares/multer");
 const getAllWorkOrder = asyncHandler(async (req, res) => {
   try {
     const getAllWorkOrder = await prisma.workOrder.findMany({
-      select: {
-        id: true,
-        unique: true,
-        pos: {
-          select: {
-            pos: true,
-          },
-        },
-        part: {
-          select: {
-            part_no: true,
-            part_name: true,
-          },
-        },
-        user: {
-          select: {
-            name: true,
-          },
-        },
-      },
+      // select: {
+      //   id: true,
+      //   unique: true,
+      //   pos: {
+      //     select: {
+      //       pos: true,
+      //     },
+      //   },
+      //   part: {
+      //     select: {
+      //       part_no: true,
+      //       part_name: true,
+      //     },
+      //   },
+      //   user: {
+      //     select: {
+      //       name: true,
+      //     },
+      //   },
+      // },
     });
     res.status(200).json({ data: getAllWorkOrder });
   } catch (err) {
@@ -50,7 +50,7 @@ const getOneWorkOrder = asyncHandler(async (req, res) => {
   try {
     const findOneWorkOrder = await prisma.workOrder.findUnique({
       where: {
-        id: parseInt(id),
+        id: id,
       },
       select: {
         id: true,
@@ -69,6 +69,11 @@ const getOneWorkOrder = asyncHandler(async (req, res) => {
         user: {
           select: {
             name: true,
+          },
+        },
+        fileUpload: {
+          select: {
+            data: true,
           },
         },
       },
@@ -88,6 +93,7 @@ const getOneWorkOrder = asyncHandler(async (req, res) => {
 
 const createWorkOrder = asyncHandler(async (req, res) => {
   const { unique, id_pos, id_part } = req.body;
+  const file = req.file;
   const user = res.locals.user;
 
   const isError = validationResult(req);
@@ -98,67 +104,17 @@ const createWorkOrder = asyncHandler(async (req, res) => {
       message: isError.errors[0].msg,
       stack: isError.errors,
     };
+  }
+
+  if (file.mimetype !== "text/csv") {
+    res.status(400);
+    throw new Error("File must be CSV");
   }
 
   try {
-    const createWorkOrder = await prisma.workOrder.create({
-      data: {
-        unique,
-        pos: {
-          connect: { id: id_pos },
-        },
-        part: {
-          connect: { id: id_part },
-        },
-        user: {
-          connect: { id: user.id },
-        },
-      },
-      select: {
-        id: true,
-        unique: true,
-        pos: {
-          select: {
-            pos: true,
-          },
-        },
-        part: {
-          select: {
-            part_no: true,
-            part_name: true,
-          },
-        },
-        user: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
-    res.status(200).json({ data: createWorkOrder });
-  } catch (err) {
-    if (!res.status) res.status(500);
-    throw new Error(err);
-  }
-});
-
-const uploadOrder = asyncHandler(async (req, res) => {
-  const file = req.file;
-  const user = res.locals.user;
-  const isError = validationResult(req);
-  if (!isError.isEmpty()) {
-    res.status(400);
-    throw {
-      name: "Validation Error",
-      message: isError.errors[0].msg,
-      stack: isError.errors,
-    };
-  }
-
-  if (file.mimetype === "text/csv") {
-    const parsing = await parseCSV(file);
-    try {
-      const createdOrder = await prisma.fileUpload.create({
+    const createWorkOrder = await prisma.$transaction(async () => {
+      const parsing = await parseCSV(file);
+      const uploadFile = await prisma.fileUpload.create({
         data: {
           id_user: user.id,
           file_name: file.originalname,
@@ -171,16 +127,56 @@ const uploadOrder = asyncHandler(async (req, res) => {
         },
       });
 
-      res.status(200).json({
-        message: createdOrder,
+      const dataWorkOrder = await prisma.workOrder.create({
+        data: {
+          unique,
+          pos: {
+            connect: { id: id_pos },
+          },
+          part: {
+            connect: { id: id_part },
+          },
+          user: {
+            connect: { id: user.id },
+          },
+          fileUpload: {
+            connect: { id: uploadFile.id },
+          },
+        },
+        select: {
+          id: true,
+          unique: true,
+          // pos: {
+          //   select: {
+          //     pos: true,
+          //   },
+          // },
+          // part: {
+          //   select: {
+          //     part_no: true,
+          //     part_name: true,
+          //   },
+          // },
+          // user: {
+          //   select: {
+          //     name: true,
+          //   },
+          // },
+          fileUpload: {
+            select: {
+              data: true,
+            },
+          },
+        },
       });
-    } catch (err) {
-      if (!res.status) res.status(500);
-      throw new Error(err);
-    }
-  } else {
-    res.status(400);
-    throw new Error("Invalid file format. Only CSV files are supported.");
+      return dataWorkOrder;
+    });
+
+    res.status(200).json({ data: createWorkOrder });
+  } catch (err) {
+    deleteFile(file.path);
+    if (!res.status) res.status(500);
+    throw new Error(err);
   }
 });
 
@@ -197,21 +193,27 @@ const deleteOneWorkOrder = asyncHandler(async (req, res) => {
   }
 
   try {
-    const findOneWorkOrder = await prisma.workOrder.findFirst({
+    const deleteWorkOrder = await prisma.workOrder.delete({
       where: {
-        id: parseInt(id),
+        id: id,
+      },
+      include: {
+        fileUpload: true,
       },
     });
-    if (!findOneWorkOrder) {
+
+    if (!deleteWorkOrder) {
       res.status(404);
       throw new Error("Data tidak ditemukan");
     }
-
-    const deleteWorkOrder = await prisma.workOrder.delete({
-      where: {
-        id: parseInt(id),
-      },
-    });
+    if (deleteWorkOrder.fileUpload) {
+      await prisma.fileUpload.delete({
+        where: {
+          id: deleteWorkOrder.fileUpload.id,
+        },
+      });
+      deleteFile(deleteWorkOrder.fileUpload.file_path);
+    }
 
     res.status(200).json({ message: "Data berhasil dihapus!" });
   } catch (err) {
@@ -220,7 +222,7 @@ const deleteOneWorkOrder = asyncHandler(async (req, res) => {
   }
 });
 module.exports = {
-  uploadOrder,
+  // uploadOrder,
   createWorkOrder,
   getAllWorkOrder,
   getOneWorkOrder,
