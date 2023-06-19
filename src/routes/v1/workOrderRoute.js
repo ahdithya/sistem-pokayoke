@@ -8,10 +8,6 @@ router
   .get(workOrderController.getAllWorkOrder)
   .post(uploadFile.single("file"), workOrderController.createWorkOrder);
 
-// router
-//   .route("/upload-file")
-//   .post(uploadFile.single("file"), workOrderController.uploadOrder);
-
 router
   .route("/:id")
   .get(workOrderController.getOneWorkOrder)
