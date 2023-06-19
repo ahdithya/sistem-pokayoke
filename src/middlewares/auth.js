@@ -3,7 +3,7 @@ const asyncHandler = require("express-async-handler");
 const prisma = require("../configs/prisma");
 require("dotenv").config();
 
-const authJWT = asyncHandler(async (req, res, next) => {
+const auth = asyncHandler(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
@@ -52,4 +52,4 @@ const generateToken = (id) => {
   });
 };
 
-module.exports = { authJWT, generateToken, adminOnly };
+module.exports = { auth, generateToken, adminOnly };
