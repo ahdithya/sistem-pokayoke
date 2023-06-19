@@ -6,11 +6,11 @@ const workOrderController = require("../../controllers/workOrderController");
 router
   .route("/")
   .get(workOrderController.getAllWorkOrder)
-  .post(workOrderController.createWorkOrder);
+  .post(uploadFile.single("file"), workOrderController.createWorkOrder);
 
-router
-  .route("/upload-file")
-  .post(uploadFile.single("file"), workOrderController.uploadOrder);
+// router
+//   .route("/upload-file")
+//   .post(uploadFile.single("file"), workOrderController.uploadOrder);
 
 router
   .route("/:id")
