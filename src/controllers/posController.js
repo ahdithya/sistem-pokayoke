@@ -28,7 +28,7 @@ const getOnePos = asyncHandler(async (req, res) => {
   try {
     const findOnePos = await prisma.pos.findUnique({
       where: {
-        id: parseInt(id),
+        id: id,
       },
     });
     if (!findOnePos) {
@@ -84,7 +84,7 @@ const updateOnePos = asyncHandler(async (req, res) => {
   }
   const findOnePos = await prisma.pos.findUnique({
     where: {
-      id: parseInt(id),
+      id: id,
     },
   });
   if (!findOnePos) {
@@ -95,7 +95,7 @@ const updateOnePos = asyncHandler(async (req, res) => {
   try {
     const updateOnePos = await prisma.pos.update({
       where: {
-        id: parseInt(id),
+        id: id,
       },
       data: {
         pos,
@@ -115,7 +115,7 @@ const deleteOnePos = asyncHandler(async (req, res) => {
 
   const findOnePos = await prisma.pos.findUnique({
     where: {
-      id: parseInt(id),
+      id: id,
     },
   });
   if (!findOnePos) {
@@ -126,7 +126,7 @@ const deleteOnePos = asyncHandler(async (req, res) => {
   try {
     const deleteOnePos = await prisma.pos.delete({
       where: {
-        id: parseInt(id),
+        id: id,
       },
     });
     if (!deleteOnePos) {
