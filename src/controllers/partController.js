@@ -35,7 +35,7 @@ const getOnePart = asyncHandler(async (req, res) => {
   try {
     const findOnePart = await prisma.part.findUnique({
       where: {
-        id: parseInt(id),
+        id: id,
       },
     });
     if (!findOnePart) {
@@ -93,7 +93,7 @@ const updateOnePart = asyncHandler(async (req, res) => {
   try {
     const findOnePart = await prisma.part.findUnique({
       where: {
-        id: parseInt(id),
+        id: id,
       },
     });
     if (!findOnePart) {
@@ -103,7 +103,7 @@ const updateOnePart = asyncHandler(async (req, res) => {
 
     const updatePart = await prisma.part.update({
       where: {
-        id: parseInt(id),
+        id: id,
       },
       data: {
         part_no,
@@ -134,7 +134,7 @@ const deleteOnePart = asyncHandler(async (req, res) => {
   try {
     const findOnePart = await prisma.part.findUnique({
       where: {
-        id: parseInt(id),
+        id: id,
       },
     });
     if (!findOnePart) {
@@ -143,7 +143,7 @@ const deleteOnePart = asyncHandler(async (req, res) => {
     }
     const deletePart = await prisma.part.delete({
       where: {
-        id: parseInt(id),
+        id: id,
       },
     });
 
