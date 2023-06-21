@@ -10,6 +10,10 @@ router
 
 router.route("/login").post(userController.loginUser);
 
-router.route("/:id").get().put().delete();
+router
+  .route("/:id")
+  .get()
+  .put()
+  .delete(auth, adminOnly, userController.deleteUser);
 
 module.exports = router;

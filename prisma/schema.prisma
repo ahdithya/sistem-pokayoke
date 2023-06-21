@@ -22,7 +22,6 @@ model User {
   email      String
   password   String
   role       role         @default(user)
-  position   String
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   workOrder  workOrder[]
