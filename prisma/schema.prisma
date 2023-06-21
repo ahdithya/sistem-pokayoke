@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum role {
+  admin
+  user
+}
+
+model User {
+  id         String       @id @default(uuid())
+  name       String
+  username   String
+  email      String
+  password   String
+  role       role         @default(user)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  workOrder  workOrder[]
+  fileUpload fileUpload[]
+}
+
+model Part {
+  id        String      @id @default(uuid())
+  part_no   String
+  part_name String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  workOrder workOrder[]
+}
+
+model Pos {
+  id          String      @id @default(uuid())
+  pos         String
+  description String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  workOrder   workOrder[]
+}
+
+model fileUpload {
+  id             String @id @default(uuid())
+  id_user        String
+  file_name      String
+  file_mime      String
+  file_original  String
+  file_path      String
+  file_extension String
+  type           String
+  data           Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User        @relation(fields: [id_user], references: [id])
+  workOrder workOrder[]
+}
+
+model workOrder {
+  id        String   @id @default(uuid())
+  unique    String
+  id_pos    String
+  id_part   String
+  id_user   String
+  id_file   String
+  tanggal   DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pos        Pos        @relation(fields: [id_pos], references: [id])
+  part       Part       @relation(fields: [id_part], references: [id])
+  user       User       @relation(fields: [id_user], references: [id])
+  fileUpload fileUpload @relation(fields: [id_file], references: [id], onDelete: Cascade)
+}
