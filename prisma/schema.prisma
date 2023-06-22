@@ -16,7 +16,7 @@ enum role {
   user
 }
 
-model User {
+model user {
   id         String       @id @default(uuid())
   name       String
   username   String
@@ -29,7 +29,7 @@ model User {
   fileUpload fileUpload[]
 }
 
-model Part {
+model part {
   id        String      @id @default(uuid())
   part_no   String
   part_name String
@@ -38,7 +38,7 @@ model Part {
   workOrder workOrder[]
 }
 
-model Pos {
+model pos {
   id          String      @id @default(uuid())
   pos         String
   description String
@@ -61,7 +61,7 @@ model fileUpload {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User        @relation(fields: [id_user], references: [id])
+  user      user        @relation(fields: [id_user], references: [id])
   workOrder workOrder[]
 }
 
@@ -76,8 +76,8 @@ model workOrder {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  pos        Pos        @relation(fields: [id_pos], references: [id])
-  part       Part       @relation(fields: [id_part], references: [id])
-  user       User       @relation(fields: [id_user], references: [id])
+  pos        pos        @relation(fields: [id_pos], references: [id])
+  part       part       @relation(fields: [id_part], references: [id])
+  user       user       @relation(fields: [id_user], references: [id])
   fileUpload fileUpload @relation(fields: [id_file], references: [id], onDelete: Cascade)
 }
