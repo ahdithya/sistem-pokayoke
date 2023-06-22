@@ -25,12 +25,28 @@ const parseCSV = async (file) => {
   try {
     const parsing = await new Promise((resolve, reject) => {
       const results = [];
-      fs.createReadStream(file.path)
-        .pipe(csv())
-        .on("data", (data) => results.push(data))
+      fs.createReadStream(file.path, "utf-8")
+        .pipe(csv({ separator: "," }))
+        .on("data", (data) => {
+          // Ubah format tanggal menjadi YYYY-MM-DD HH:mm:ss
+          const dateTime = data["Date & Time"];
+          const [date, time] = dateTime.split(" - ");
+          const [day, month, year] = date.split("/");
+          const [hours, minutes] = time.split(":")[0].split(".");
+          const formattedDate = `20${year}-${month}-${day} ${hours}:${minutes}:00`;
+
+          // Tambahkan properti baru dengan format tanggal yang telah diubah
+          const parsedData = {
+            ...data,
+            dataTime: formattedDate,
+          };
+
+          results.push(parsedData);
+        })
         .on("end", () => resolve(results))
         .on("error", (error) => reject(error));
     });
+
     console.log(parsing);
     return parsing;
   } catch (err) {
